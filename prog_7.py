@@ -3,37 +3,43 @@ With the ElGamal public key (p = 7919, g = 2, h = 6465) and the private
 key x = 2999, encryptthe message "Asymmetric Algorithms". Decrypt
 the resulting ciphertext to verify the originalmessage.
 """
-
-
 import random
 
-# Given ElGamal public key and private key
+# Given ElGamal public key parameters
 p = 7919
 g = 2
-h = 6465
-x = 2999
+x = 2999  # Private key
 
-# Message to encrypt (converted to integer)
+# Compute h correctly: h = g^x mod p
+h = pow(g, x, p)
+print(f"Computed h (g^x mod p): {h}")
+
+# Message to encrypt
 message = "Asymmetric Algorithms"
+
+# Convert message to list of ASCII integers
 message_int = [ord(char) for char in message]
 
 # ElGamal Encryption
 ciphertext = []
 for m in message_int:
-    y = random.randint(1, p - 2)  # Random integer
+    y = random.randint(1, p - 2)  # Random ephemeral key
     c1 = pow(g, y, p)
     c2 = (m * pow(h, y, p)) % p
     ciphertext.append((c1, c2))
+
+print(f"Ciphertext: {ciphertext}")
 
 # ElGamal Decryption
 decrypted_message = ""
 for c1, c2 in ciphertext:
     s = pow(c1, x, p)
-    m = (c2 * pow(s, p - 2, p)) % p  # Modular inverse of s
+    s_inv = pow(s, p - 2, p)  # Modular inverse of s
+    m = (c2 * s_inv) % p
     decrypted_message += chr(m)
 
-print(f"Ciphertext: {ciphertext}")
-print(f"Decrypted message: {decrypted_message}")
+print(f"Decrypted Message: {decrypted_message}")
+
 
 
 """
