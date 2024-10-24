@@ -55,44 +55,81 @@ print(f"Decrypted message: {decrypted_message.decode()}")
 
 """
 
-"""
 import rsa
 
-# Public key
+# Given RSA key parameters
 n = 323
 e = 5
+d = 173
+p = 17
+q = 19
 
-# Private key
+# Construct public and private keys
+public_key = rsa.PublicKey(n, e)
+private_key = rsa.PrivateKey(n, e, d, p, q)
+
+
+# Message to encrypt
+message = "Cryptographic Protocols"
+
+# Encrypt each character individually
+ciphertext = []
+for char in message:
+    m = ord(char)  # Convert character to integer (ASCII value)
+    if m >= n:
+        raise ValueError(f"Character '{char}' (ASCII {m}) is too large to encrypt with n={n}.")
+    c = pow(m, e, n)  # Encrypt: c = m^e mod n
+    ciphertext.append(c)
+
+print(f"Encrypted: {ciphertext}")
+
+# Decrypt each character individually
+decrypted_message = ''.join([chr(pow(c, d, n)) for c in ciphertext])
+
+print(f"Decrypted: {decrypted_message}")
+
+
+"""
+# Manual RSA Encryption and Decryption for Educational Purposes
+
+# Given RSA key parameters
+n = 323
+e = 5
 d = 173
 
 # Message to encrypt
 message = "Cryptographic Protocols"
 
-# Split the message into chunks that can fit into 'n'
-chunk_size = (n.bit_length() - 1) // 8  # Calculate the max chunk size
-message_bytes = message.encode('utf-8')
+# Function to encrypt a single character
+def rsa_encrypt_char(char, e, n):
+    m = ord(char)  # Convert character to integer (ASCII value)
+    if m >= n:
+        raise ValueError(f"Character '{char}' (ASCII {m}) is too large to encrypt with n={n}.")
+    c = pow(m, e, n)  # Encrypt: c = m^e mod n
+    return c
 
-# Function to split message into chunks
-def split_into_chunks(data, chunk_size):
-    return [data[i:i+chunk_size] for i in range(0, len(data), chunk_size)]
+# Function to decrypt a single integer back to character
+def rsa_decrypt_char(c, d, n):
+    m = pow(c, d, n)  # Decrypt: m = c^d mod n
+    return chr(m)
 
-# Encrypt each chunk
-ciphertext_chunks = []
-for chunk in split_into_chunks(message_bytes, chunk_size):
-    message_int = int.from_bytes(chunk, byteorder='big')
-    ciphertext_chunk = pow(message_int, e, n)
-    ciphertext_chunks.append(ciphertext_chunk)
+# Encrypt the message character by character
+ciphertext = []
+for char in message:
+    try:
+        encrypted_char = rsa_encrypt_char(char, e, n)
+        ciphertext.append(encrypted_char)
+    except ValueError as ve:
+        print(ve)
+        # Handle characters that cannot be encrypted with the given n
+        # For simplicity, we'll skip them
+        continue
 
-# Decrypt each chunk
-decrypted_bytes = b""
-for ciphertext_chunk in ciphertext_chunks:
-    decrypted_int = pow(ciphertext_chunk, d, n)
-    decrypted_chunk = decrypted_int.to_bytes((decrypted_int.bit_length() + 7) // 8, byteorder='big')
-    decrypted_bytes += decrypted_chunk
+print(f"Encrypted Ciphertext (as integers): {ciphertext}")
 
-# Convert decrypted bytes back to string
-decrypted_message = decrypted_bytes.decode('utf-8')
+# Decrypt the ciphertext back to the original message
+decrypted_message = ''.join([rsa_decrypt_char(c, d, n) for c in ciphertext])
 
-print(f"Encrypted: {ciphertext_chunks}")
-print(f"Decrypted: {decrypted_message}")
+print(f"Decrypted Message: {decrypted_message}")
+
 """

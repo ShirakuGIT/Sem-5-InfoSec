@@ -4,7 +4,7 @@ key x = 2999, encryptthe message "Asymmetric Algorithms". Decrypt
 the resulting ciphertext to verify the originalmessage.
 """
 
-"""
+
 import random
 
 # Given ElGamal public key and private key
@@ -35,27 +35,81 @@ for c1, c2 in ciphertext:
 print(f"Ciphertext: {ciphertext}")
 print(f"Decrypted message: {decrypted_message}")
 
-"""
-import elgamal
 
-# Given ElGamal public key parameters
+"""
+from Crypto.PublicKey import ElGamal
+from Crypto.Random import random
+from Crypto.Util.number import bytes_to_long, long_to_bytes
+
+# ElGamal key parameters
 p = 7919
 g = 2
 h = 6465
 x = 2999
 
-# Initialize the ElGamal key
-public_key = elgamal.PublicKey(p, g, h)
-private_key = elgamal.PrivateKey(public_key, x)
+# Construct ElGamal public and private keys
+public_key = ElGamal.construct((p, g, h))
+private_key = ElGamal.construct((p, g, h, x))
 
 # Message to encrypt
-message = "Asymmetric Algorithms".encode()
+message = "Asymmetric Algorithms"
+message_bytes = message.encode('utf-8')
+message_int = bytes_to_long(message_bytes)
 
-# Encrypt the message
-ciphertext = public_key.encrypt(message)
-print(f"Ciphertext: {ciphertext}")
+# Ensure message_int < p
+if message_int >= p:
+    raise ValueError("Message too long for the key size.")
 
-# Decrypt the message
-decrypted_message = private_key.decrypt(ciphertext).decode()
-print(f"Decrypted message: {decrypted_message}")
+# ElGamal Encryption
+k = random.StrongRandom().randint(1, p - 2)
+ciphertext = public_key.encrypt(message_int, k)[0]
 
+print(f"Encrypted: {ciphertext}")
+
+# ElGamal Decryption
+decrypted_int = private_key.decrypt(ciphertext)
+decrypted_bytes = long_to_bytes(decrypted_int)
+decrypted_message = decrypted_bytes.decode('utf-8')
+
+print(f"Decrypted: {decrypted_message}")
+
+"""
+
+"""
+from Crypto.PublicKey import ElGamal
+from Crypto.Random import random
+from Crypto.Util.number import bytes_to_long, long_to_bytes
+
+# ElGamal key parameters
+p = 7919  # A prime number
+g = 2     # A generator in the multiplicative group of integers modulo p
+h = 6465  # h = g^x mod p, where x is the private key
+x = 2999  # Private key
+
+# Construct ElGamal public and private keys
+public_key = ElGamal.construct((p, g, h))
+private_key = ElGamal.construct((p, g, h, x))
+
+# Message to encrypt
+message = "Asymmetric Algorithms"
+message_bytes = message.encode('utf-8')
+message_int = bytes_to_long(message_bytes)
+
+# Ensure the message integer is less than p
+if message_int >= p:
+    raise ValueError("Message too long for the key size.")
+
+# ElGamal Encryption
+k = random.StrongRandom().randint(1, p - 2)  # Random ephemeral key
+ciphertext = public_key.encrypt(message_int, k)
+
+print(f"Encrypted Ciphertext: {ciphertext}")
+
+# ElGamal Decryption
+decrypted_int = private_key.decrypt(ciphertext)
+decrypted_bytes = long_to_bytes(decrypted_int)
+decrypted_message = decrypted_bytes.decode('utf-8')
+
+print(f"Decrypted Message: {decrypted_message}")
+
+"""
